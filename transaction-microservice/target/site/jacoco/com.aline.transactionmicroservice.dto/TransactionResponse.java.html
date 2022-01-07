@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TransactionResponse.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Transaction Microservice</a> &gt; <a href="index.source.html" class="el_package">com.aline.transactionmicroservice.dto</a> &gt; <span class="el_source">TransactionResponse.java</span></div><h1>TransactionResponse.java</h1><pre class="source lang-java linenums">package com.aline.transactionmicroservice.dto;
+
+import com.aline.transactionmicroservice.model.TransactionMethod;
+import com.aline.transactionmicroservice.model.TransactionStatus;
+import com.aline.transactionmicroservice.model.TransactionType;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+
+/**
+ * Standard DTO to represent a transaction
+ * &lt;br&gt;
+ * &lt;em&gt;This is what should be returned when retrieving
+ * transaction information through the API.&lt;/em&gt;
+ */
+<span class="nc bnc" id="L19" title="All 70 branches missed.">@Data</span>
+<span class="nc" id="L20">@Builder</span>
+<span class="nc" id="L21">@NoArgsConstructor</span>
+<span class="nc" id="L22">@AllArgsConstructor</span>
+public class TransactionResponse {
+<span class="nc" id="L24">    private long id;</span>
+<span class="nc" id="L25">    private TransactionMethod method;</span>
+<span class="nc" id="L26">    private int amount;</span>
+<span class="nc" id="L27">    private String accountNumber;</span>
+<span class="nc" id="L28">    private int initialBalance;</span>
+<span class="nc" id="L29">    private int postedBalance;</span>
+<span class="nc" id="L30">    private TransactionType type;</span>
+<span class="nc" id="L31">    private TransactionStatus status;</span>
+<span class="nc" id="L32">    private String description;</span>
+<span class="nc" id="L33">    private MerchantResponse merchant;</span>
+<span class="nc" id="L34">    private LocalDateTime date;</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

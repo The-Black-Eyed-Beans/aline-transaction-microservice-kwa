@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TransactionState.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Transaction Microservice</a> &gt; <a href="index.source.html" class="el_package">com.aline.transactionmicroservice.model</a> &gt; <span class="el_source">TransactionState.java</span></div><h1>TransactionState.java</h1><pre class="source lang-java linenums">package com.aline.transactionmicroservice.model;
+
+<span class="fc" id="L3">public enum TransactionState {</span>
+    /**
+     * Initial state of transaction. This state is still reversible, meaning
+     * the transaction can be deleted by the API.
+     */
+<span class="fc" id="L8">    CREATED,</span>
+
+    /**
+     * The transaction is now being processed. This is where the validity of the transaction
+     * is checked and will automatically be reversed if the transaction is invalid.
+     * The account funds will not be saved in this state, however, they are checked. This state
+     * is where more transaction properties are added such as status, increasing or decreasing, etc..
+     */
+<span class="fc" id="L16">    PROCESSING,</span>
+
+    /**
+     * Posted state means the transactions is now considered a permanent record of the account and
+     * can no longer be reversed. Account states are committed to the database, and it cannot be
+     * undone unless by another transaction such as a refund.
+     */
+<span class="fc" id="L23">    POSTED</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

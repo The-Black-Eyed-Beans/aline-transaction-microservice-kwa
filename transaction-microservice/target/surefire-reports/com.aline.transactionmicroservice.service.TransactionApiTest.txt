@@ -1,0 +1,100 @@
+-------------------------------------------------------------------------------
+Test set: com.aline.transactionmicroservice.service.TransactionApiTest
+-------------------------------------------------------------------------------
+Tests run: 12, Failures: 0, Errors: 12, Skipped: 0, Time elapsed: 1.982 s <<< FAILURE! - in com.aline.transactionmicroservice.service.TransactionApiTest
+test_transferFunds_denyOutTransaction_when_notEnoughFunds_fromAccount  Time elapsed: 0.012 s  <<< ERROR!
+org.springframework.jdbc.datasource.init.ScriptStatementFailedException: 
+Failed to execute SQL script statement #14 of class path resource [scripts/transactions.sql]: insert into transaction (id, type, method, amount, date, account_id, initial_balance, posted_balance, status, merchant_code, state, description) values (1, 'WITHDRAWAL', 'ACH', 10000, '2021-08-01', 1, 100000, 90000, 'APPROVED', 'ALINE', 'POSTED', 'Batman is Bruce Wayne.'); nested exception is org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException: Referential integrity constraint violation: "FKSC1MS700FJXQYQ0J4555UC28A: PUBLIC.TRANSACTION FOREIGN KEY(MERCHANT_CODE) REFERENCES PUBLIC.MERCHANT(CODE) ('ALINE')"; SQL statement:
+insert into transaction (id, type, method, amount, date, account_id, initial_balance, posted_balance, status, merchant_code, state, description) values (1, 'WITHDRAWAL', 'ACH', 10000, '2021-08-01', 1, 100000, 90000, 'APPROVED', 'ALINE', 'POSTED', 'Batman is Bruce Wayne.') [23506-200]
+Caused by: org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException: 
+Referential integrity constraint violation: "FKSC1MS700FJXQYQ0J4555UC28A: PUBLIC.TRANSACTION FOREIGN KEY(MERCHANT_CODE) REFERENCES PUBLIC.MERCHANT(CODE) ('ALINE')"; SQL statement:
+insert into transaction (id, type, method, amount, date, account_id, initial_balance, posted_balance, status, merchant_code, state, description) values (1, 'WITHDRAWAL', 'ACH', 10000, '2021-08-01', 1, 100000, 90000, 'APPROVED', 'ALINE', 'POSTED', 'Batman is Bruce Wayne.') [23506-200]
+
+test_transferFunds_accountsReflectNewBalance  Time elapsed: 0.011 s  <<< ERROR!
+org.springframework.jdbc.datasource.init.ScriptStatementFailedException: 
+Failed to execute SQL script statement #14 of class path resource [scripts/transactions.sql]: insert into transaction (id, type, method, amount, date, account_id, initial_balance, posted_balance, status, merchant_code, state, description) values (1, 'WITHDRAWAL', 'ACH', 10000, '2021-08-01', 1, 100000, 90000, 'APPROVED', 'ALINE', 'POSTED', 'Batman is Bruce Wayne.'); nested exception is org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException: Referential integrity constraint violation: "FKSC1MS700FJXQYQ0J4555UC28A: PUBLIC.TRANSACTION FOREIGN KEY(MERCHANT_CODE) REFERENCES PUBLIC.MERCHANT(CODE) ('ALINE')"; SQL statement:
+insert into transaction (id, type, method, amount, date, account_id, initial_balance, posted_balance, status, merchant_code, state, description) values (1, 'WITHDRAWAL', 'ACH', 10000, '2021-08-01', 1, 100000, 90000, 'APPROVED', 'ALINE', 'POSTED', 'Batman is Bruce Wayne.') [23506-200]
+Caused by: org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException: 
+Referential integrity constraint violation: "FKSC1MS700FJXQYQ0J4555UC28A: PUBLIC.TRANSACTION FOREIGN KEY(MERCHANT_CODE) REFERENCES PUBLIC.MERCHANT(CODE) ('ALINE')"; SQL statement:
+insert into transaction (id, type, method, amount, date, account_id, initial_balance, posted_balance, status, merchant_code, state, description) values (1, 'WITHDRAWAL', 'ACH', 10000, '2021-08-01', 1, 100000, 90000, 'APPROVED', 'ALINE', 'POSTED', 'Batman is Bruce Wayne.') [23506-200]
+
+test_bankAccountBalanceCorrectAmount_when_transactionDenied  Time elapsed: 0.01 s  <<< ERROR!
+org.springframework.jdbc.datasource.init.ScriptStatementFailedException: 
+Failed to execute SQL script statement #14 of class path resource [scripts/transactions.sql]: insert into transaction (id, type, method, amount, date, account_id, initial_balance, posted_balance, status, merchant_code, state, description) values (1, 'WITHDRAWAL', 'ACH', 10000, '2021-08-01', 1, 100000, 90000, 'APPROVED', 'ALINE', 'POSTED', 'Batman is Bruce Wayne.'); nested exception is org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException: Referential integrity constraint violation: "FKSC1MS700FJXQYQ0J4555UC28A: PUBLIC.TRANSACTION FOREIGN KEY(MERCHANT_CODE) REFERENCES PUBLIC.MERCHANT(CODE) ('ALINE')"; SQL statement:
+insert into transaction (id, type, method, amount, date, account_id, initial_balance, posted_balance, status, merchant_code, state, description) values (1, 'WITHDRAWAL', 'ACH', 10000, '2021-08-01', 1, 100000, 90000, 'APPROVED', 'ALINE', 'POSTED', 'Batman is Bruce Wayne.') [23506-200]
+Caused by: org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException: 
+Referential integrity constraint violation: "FKSC1MS700FJXQYQ0J4555UC28A: PUBLIC.TRANSACTION FOREIGN KEY(MERCHANT_CODE) REFERENCES PUBLIC.MERCHANT(CODE) ('ALINE')"; SQL statement:
+insert into transaction (id, type, method, amount, date, account_id, initial_balance, posted_balance, status, merchant_code, state, description) values (1, 'WITHDRAWAL', 'ACH', 10000, '2021-08-01', 1, 100000, 90000, 'APPROVED', 'ALINE', 'POSTED', 'Batman is Bruce Wayne.') [23506-200]
+
+test_bankAccountBalanceIncrease_when_transactionApproved  Time elapsed: 0.009 s  <<< ERROR!
+org.springframework.jdbc.datasource.init.ScriptStatementFailedException: 
+Failed to execute SQL script statement #14 of class path resource [scripts/transactions.sql]: insert into transaction (id, type, method, amount, date, account_id, initial_balance, posted_balance, status, merchant_code, state, description) values (1, 'WITHDRAWAL', 'ACH', 10000, '2021-08-01', 1, 100000, 90000, 'APPROVED', 'ALINE', 'POSTED', 'Batman is Bruce Wayne.'); nested exception is org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException: Referential integrity constraint violation: "FKSC1MS700FJXQYQ0J4555UC28A: PUBLIC.TRANSACTION FOREIGN KEY(MERCHANT_CODE) REFERENCES PUBLIC.MERCHANT(CODE) ('ALINE')"; SQL statement:
+insert into transaction (id, type, method, amount, date, account_id, initial_balance, posted_balance, status, merchant_code, state, description) values (1, 'WITHDRAWAL', 'ACH', 10000, '2021-08-01', 1, 100000, 90000, 'APPROVED', 'ALINE', 'POSTED', 'Batman is Bruce Wayne.') [23506-200]
+Caused by: org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException: 
+Referential integrity constraint violation: "FKSC1MS700FJXQYQ0J4555UC28A: PUBLIC.TRANSACTION FOREIGN KEY(MERCHANT_CODE) REFERENCES PUBLIC.MERCHANT(CODE) ('ALINE')"; SQL statement:
+insert into transaction (id, type, method, amount, date, account_id, initial_balance, posted_balance, status, merchant_code, state, description) values (1, 'WITHDRAWAL', 'ACH', 10000, '2021-08-01', 1, 100000, 90000, 'APPROVED', 'ALINE', 'POSTED', 'Batman is Bruce Wayne.') [23506-200]
+
+test_bankAccountBalanceDecreaseCorrectAmount_when_transactionApproved  Time elapsed: 0.009 s  <<< ERROR!
+org.springframework.jdbc.datasource.init.ScriptStatementFailedException: 
+Failed to execute SQL script statement #14 of class path resource [scripts/transactions.sql]: insert into transaction (id, type, method, amount, date, account_id, initial_balance, posted_balance, status, merchant_code, state, description) values (1, 'WITHDRAWAL', 'ACH', 10000, '2021-08-01', 1, 100000, 90000, 'APPROVED', 'ALINE', 'POSTED', 'Batman is Bruce Wayne.'); nested exception is org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException: Referential integrity constraint violation: "FKSC1MS700FJXQYQ0J4555UC28A: PUBLIC.TRANSACTION FOREIGN KEY(MERCHANT_CODE) REFERENCES PUBLIC.MERCHANT(CODE) ('ALINE')"; SQL statement:
+insert into transaction (id, type, method, amount, date, account_id, initial_balance, posted_balance, status, merchant_code, state, description) values (1, 'WITHDRAWAL', 'ACH', 10000, '2021-08-01', 1, 100000, 90000, 'APPROVED', 'ALINE', 'POSTED', 'Batman is Bruce Wayne.') [23506-200]
+Caused by: org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException: 
+Referential integrity constraint violation: "FKSC1MS700FJXQYQ0J4555UC28A: PUBLIC.TRANSACTION FOREIGN KEY(MERCHANT_CODE) REFERENCES PUBLIC.MERCHANT(CODE) ('ALINE')"; SQL statement:
+insert into transaction (id, type, method, amount, date, account_id, initial_balance, posted_balance, status, merchant_code, state, description) values (1, 'WITHDRAWAL', 'ACH', 10000, '2021-08-01', 1, 100000, 90000, 'APPROVED', 'ALINE', 'POSTED', 'Batman is Bruce Wayne.') [23506-200]
+
+test_receiptContainsCorrectInformation_purchaseChecking  Time elapsed: 0.009 s  <<< ERROR!
+org.springframework.jdbc.datasource.init.ScriptStatementFailedException: 
+Failed to execute SQL script statement #14 of class path resource [scripts/transactions.sql]: insert into transaction (id, type, method, amount, date, account_id, initial_balance, posted_balance, status, merchant_code, state, description) values (1, 'WITHDRAWAL', 'ACH', 10000, '2021-08-01', 1, 100000, 90000, 'APPROVED', 'ALINE', 'POSTED', 'Batman is Bruce Wayne.'); nested exception is org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException: Referential integrity constraint violation: "FKSC1MS700FJXQYQ0J4555UC28A: PUBLIC.TRANSACTION FOREIGN KEY(MERCHANT_CODE) REFERENCES PUBLIC.MERCHANT(CODE) ('ALINE')"; SQL statement:
+insert into transaction (id, type, method, amount, date, account_id, initial_balance, posted_balance, status, merchant_code, state, description) values (1, 'WITHDRAWAL', 'ACH', 10000, '2021-08-01', 1, 100000, 90000, 'APPROVED', 'ALINE', 'POSTED', 'Batman is Bruce Wayne.') [23506-200]
+Caused by: org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException: 
+Referential integrity constraint violation: "FKSC1MS700FJXQYQ0J4555UC28A: PUBLIC.TRANSACTION FOREIGN KEY(MERCHANT_CODE) REFERENCES PUBLIC.MERCHANT(CODE) ('ALINE')"; SQL statement:
+insert into transaction (id, type, method, amount, date, account_id, initial_balance, posted_balance, status, merchant_code, state, description) values (1, 'WITHDRAWAL', 'ACH', 10000, '2021-08-01', 1, 100000, 90000, 'APPROVED', 'ALINE', 'POSTED', 'Batman is Bruce Wayne.') [23506-200]
+
+test_receiptContainsCorrectInformation_depositChecking  Time elapsed: 0.009 s  <<< ERROR!
+org.springframework.jdbc.datasource.init.ScriptStatementFailedException: 
+Failed to execute SQL script statement #14 of class path resource [scripts/transactions.sql]: insert into transaction (id, type, method, amount, date, account_id, initial_balance, posted_balance, status, merchant_code, state, description) values (1, 'WITHDRAWAL', 'ACH', 10000, '2021-08-01', 1, 100000, 90000, 'APPROVED', 'ALINE', 'POSTED', 'Batman is Bruce Wayne.'); nested exception is org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException: Referential integrity constraint violation: "FKSC1MS700FJXQYQ0J4555UC28A: PUBLIC.TRANSACTION FOREIGN KEY(MERCHANT_CODE) REFERENCES PUBLIC.MERCHANT(CODE) ('ALINE')"; SQL statement:
+insert into transaction (id, type, method, amount, date, account_id, initial_balance, posted_balance, status, merchant_code, state, description) values (1, 'WITHDRAWAL', 'ACH', 10000, '2021-08-01', 1, 100000, 90000, 'APPROVED', 'ALINE', 'POSTED', 'Batman is Bruce Wayne.') [23506-200]
+Caused by: org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException: 
+Referential integrity constraint violation: "FKSC1MS700FJXQYQ0J4555UC28A: PUBLIC.TRANSACTION FOREIGN KEY(MERCHANT_CODE) REFERENCES PUBLIC.MERCHANT(CODE) ('ALINE')"; SQL statement:
+insert into transaction (id, type, method, amount, date, account_id, initial_balance, posted_balance, status, merchant_code, state, description) values (1, 'WITHDRAWAL', 'ACH', 10000, '2021-08-01', 1, 100000, 90000, 'APPROVED', 'ALINE', 'POSTED', 'Batman is Bruce Wayne.') [23506-200]
+
+test_unprocessableWhenTransactionPosted  Time elapsed: 0.008 s  <<< ERROR!
+org.springframework.jdbc.datasource.init.ScriptStatementFailedException: 
+Failed to execute SQL script statement #14 of class path resource [scripts/transactions.sql]: insert into transaction (id, type, method, amount, date, account_id, initial_balance, posted_balance, status, merchant_code, state, description) values (1, 'WITHDRAWAL', 'ACH', 10000, '2021-08-01', 1, 100000, 90000, 'APPROVED', 'ALINE', 'POSTED', 'Batman is Bruce Wayne.'); nested exception is org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException: Referential integrity constraint violation: "FKSC1MS700FJXQYQ0J4555UC28A: PUBLIC.TRANSACTION FOREIGN KEY(MERCHANT_CODE) REFERENCES PUBLIC.MERCHANT(CODE) ('ALINE')"; SQL statement:
+insert into transaction (id, type, method, amount, date, account_id, initial_balance, posted_balance, status, merchant_code, state, description) values (1, 'WITHDRAWAL', 'ACH', 10000, '2021-08-01', 1, 100000, 90000, 'APPROVED', 'ALINE', 'POSTED', 'Batman is Bruce Wayne.') [23506-200]
+Caused by: org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException: 
+Referential integrity constraint violation: "FKSC1MS700FJXQYQ0J4555UC28A: PUBLIC.TRANSACTION FOREIGN KEY(MERCHANT_CODE) REFERENCES PUBLIC.MERCHANT(CODE) ('ALINE')"; SQL statement:
+insert into transaction (id, type, method, amount, date, account_id, initial_balance, posted_balance, status, merchant_code, state, description) values (1, 'WITHDRAWAL', 'ACH', 10000, '2021-08-01', 1, 100000, 90000, 'APPROVED', 'ALINE', 'POSTED', 'Batman is Bruce Wayne.') [23506-200]
+
+test_createsTransactionWithCorrectProperties_for_withdrawal  Time elapsed: 0.007 s  <<< ERROR!
+org.springframework.jdbc.datasource.init.ScriptStatementFailedException: 
+Failed to execute SQL script statement #14 of class path resource [scripts/transactions.sql]: insert into transaction (id, type, method, amount, date, account_id, initial_balance, posted_balance, status, merchant_code, state, description) values (1, 'WITHDRAWAL', 'ACH', 10000, '2021-08-01', 1, 100000, 90000, 'APPROVED', 'ALINE', 'POSTED', 'Batman is Bruce Wayne.'); nested exception is org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException: Referential integrity constraint violation: "FKSC1MS700FJXQYQ0J4555UC28A: PUBLIC.TRANSACTION FOREIGN KEY(MERCHANT_CODE) REFERENCES PUBLIC.MERCHANT(CODE) ('ALINE')"; SQL statement:
+insert into transaction (id, type, method, amount, date, account_id, initial_balance, posted_balance, status, merchant_code, state, description) values (1, 'WITHDRAWAL', 'ACH', 10000, '2021-08-01', 1, 100000, 90000, 'APPROVED', 'ALINE', 'POSTED', 'Batman is Bruce Wayne.') [23506-200]
+Caused by: org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException: 
+Referential integrity constraint violation: "FKSC1MS700FJXQYQ0J4555UC28A: PUBLIC.TRANSACTION FOREIGN KEY(MERCHANT_CODE) REFERENCES PUBLIC.MERCHANT(CODE) ('ALINE')"; SQL statement:
+insert into transaction (id, type, method, amount, date, account_id, initial_balance, posted_balance, status, merchant_code, state, description) values (1, 'WITHDRAWAL', 'ACH', 10000, '2021-08-01', 1, 100000, 90000, 'APPROVED', 'ALINE', 'POSTED', 'Batman is Bruce Wayne.') [23506-200]
+
+test_canDelete  Time elapsed: 0.009 s  <<< ERROR!
+org.springframework.jdbc.datasource.init.ScriptStatementFailedException: 
+Failed to execute SQL script statement #14 of class path resource [scripts/transactions.sql]: insert into transaction (id, type, method, amount, date, account_id, initial_balance, posted_balance, status, merchant_code, state, description) values (1, 'WITHDRAWAL', 'ACH', 10000, '2021-08-01', 1, 100000, 90000, 'APPROVED', 'ALINE', 'POSTED', 'Batman is Bruce Wayne.'); nested exception is org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException: Referential integrity constraint violation: "FKSC1MS700FJXQYQ0J4555UC28A: PUBLIC.TRANSACTION FOREIGN KEY(MERCHANT_CODE) REFERENCES PUBLIC.MERCHANT(CODE) ('ALINE')"; SQL statement:
+insert into transaction (id, type, method, amount, date, account_id, initial_balance, posted_balance, status, merchant_code, state, description) values (1, 'WITHDRAWAL', 'ACH', 10000, '2021-08-01', 1, 100000, 90000, 'APPROVED', 'ALINE', 'POSTED', 'Batman is Bruce Wayne.') [23506-200]
+Caused by: org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException: 
+Referential integrity constraint violation: "FKSC1MS700FJXQYQ0J4555UC28A: PUBLIC.TRANSACTION FOREIGN KEY(MERCHANT_CODE) REFERENCES PUBLIC.MERCHANT(CODE) ('ALINE')"; SQL statement:
+insert into transaction (id, type, method, amount, date, account_id, initial_balance, posted_balance, status, merchant_code, state, description) values (1, 'WITHDRAWAL', 'ACH', 10000, '2021-08-01', 1, 100000, 90000, 'APPROVED', 'ALINE', 'POSTED', 'Batman is Bruce Wayne.') [23506-200]
+
+test_createsTransactionWithCorrectProperties_and_accountBalanceNotAffected_and_createsNewMerchant  Time elapsed: 0.008 s  <<< ERROR!
+org.springframework.jdbc.datasource.init.ScriptStatementFailedException: 
+Failed to execute SQL script statement #14 of class path resource [scripts/transactions.sql]: insert into transaction (id, type, method, amount, date, account_id, initial_balance, posted_balance, status, merchant_code, state, description) values (1, 'WITHDRAWAL', 'ACH', 10000, '2021-08-01', 1, 100000, 90000, 'APPROVED', 'ALINE', 'POSTED', 'Batman is Bruce Wayne.'); nested exception is org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException: Referential integrity constraint violation: "FKSC1MS700FJXQYQ0J4555UC28A: PUBLIC.TRANSACTION FOREIGN KEY(MERCHANT_CODE) REFERENCES PUBLIC.MERCHANT(CODE) ('ALINE')"; SQL statement:
+insert into transaction (id, type, method, amount, date, account_id, initial_balance, posted_balance, status, merchant_code, state, description) values (1, 'WITHDRAWAL', 'ACH', 10000, '2021-08-01', 1, 100000, 90000, 'APPROVED', 'ALINE', 'POSTED', 'Batman is Bruce Wayne.') [23506-200]
+Caused by: org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException: 
+Referential integrity constraint violation: "FKSC1MS700FJXQYQ0J4555UC28A: PUBLIC.TRANSACTION FOREIGN KEY(MERCHANT_CODE) REFERENCES PUBLIC.MERCHANT(CODE) ('ALINE')"; SQL statement:
+insert into transaction (id, type, method, amount, date, account_id, initial_balance, posted_balance, status, merchant_code, state, description) values (1, 'WITHDRAWAL', 'ACH', 10000, '2021-08-01', 1, 100000, 90000, 'APPROVED', 'ALINE', 'POSTED', 'Batman is Bruce Wayne.') [23506-200]
+
+test_createsTransactionWithCorrectProperties_with_existingMerchant  Time elapsed: 0.01 s  <<< ERROR!
+org.springframework.jdbc.datasource.init.ScriptStatementFailedException: 
+Failed to execute SQL script statement #14 of class path resource [scripts/transactions.sql]: insert into transaction (id, type, method, amount, date, account_id, initial_balance, posted_balance, status, merchant_code, state, description) values (1, 'WITHDRAWAL', 'ACH', 10000, '2021-08-01', 1, 100000, 90000, 'APPROVED', 'ALINE', 'POSTED', 'Batman is Bruce Wayne.'); nested exception is org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException: Referential integrity constraint violation: "FKSC1MS700FJXQYQ0J4555UC28A: PUBLIC.TRANSACTION FOREIGN KEY(MERCHANT_CODE) REFERENCES PUBLIC.MERCHANT(CODE) ('ALINE')"; SQL statement:
+insert into transaction (id, type, method, amount, date, account_id, initial_balance, posted_balance, status, merchant_code, state, description) values (1, 'WITHDRAWAL', 'ACH', 10000, '2021-08-01', 1, 100000, 90000, 'APPROVED', 'ALINE', 'POSTED', 'Batman is Bruce Wayne.') [23506-200]
+Caused by: org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException: 
+Referential integrity constraint violation: "FKSC1MS700FJXQYQ0J4555UC28A: PUBLIC.TRANSACTION FOREIGN KEY(MERCHANT_CODE) REFERENCES PUBLIC.MERCHANT(CODE) ('ALINE')"; SQL statement:
+insert into transaction (id, type, method, amount, date, account_id, initial_balance, posted_balance, status, merchant_code, state, description) values (1, 'WITHDRAWAL', 'ACH', 10000, '2021-08-01', 1, 100000, 90000, 'APPROVED', 'ALINE', 'POSTED', 'Batman is Bruce Wayne.') [23506-200]
+

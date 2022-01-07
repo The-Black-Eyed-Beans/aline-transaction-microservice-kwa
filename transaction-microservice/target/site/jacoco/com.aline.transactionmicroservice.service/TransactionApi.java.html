@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TransactionApi.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Transaction Microservice</a> &gt; <a href="index.source.html" class="el_package">com.aline.transactionmicroservice.service</a> &gt; <span class="el_source">TransactionApi.java</span></div><h1>TransactionApi.java</h1><pre class="source lang-java linenums">package com.aline.transactionmicroservice.service;
+
+import com.aline.core.exception.BadRequestException;
+import com.aline.core.exception.UnprocessableException;
+import com.aline.core.exception.notfound.AccountNotFoundException;
+import com.aline.core.model.account.Account;
+import com.aline.core.model.account.AccountType;
+import com.aline.core.model.account.CheckingAccount;
+import com.aline.core.security.annotation.RoleIsManagement;
+import com.aline.transactionmicroservice.dto.CreateTransaction;
+import com.aline.transactionmicroservice.dto.MerchantResponse;
+import com.aline.transactionmicroservice.dto.Receipt;
+import com.aline.transactionmicroservice.dto.TransferFundsRequest;
+import com.aline.transactionmicroservice.exception.TransactionNotFoundException;
+import com.aline.transactionmicroservice.exception.TransactionPostedException;
+import com.aline.transactionmicroservice.model.Merchant;
+import com.aline.transactionmicroservice.model.Transaction;
+import com.aline.transactionmicroservice.model.TransactionMethod;
+import com.aline.transactionmicroservice.model.TransactionState;
+import com.aline.transactionmicroservice.model.TransactionStatus;
+import com.aline.transactionmicroservice.model.TransactionType;
+import com.aline.transactionmicroservice.repository.TransactionRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
+import org.apache.logging.log4j.util.Strings;
+import org.modelmapper.ModelMapper;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Service;
+
+import javax.transaction.Transactional;
+import javax.validation.Valid;
+import java.time.LocalDateTime;
+
+/**
+ * Post transaction service handles the processing
+ * and posting of transactions created by users
+ * using the public Transaction API. The transaction API can
+ * only be accessed by authorized users whether that be
+ * members, vendors, or other authorized individuals. They
+ * will be provided an API key. They will register as a vendor
+ * with the bank first in order to accept payment from our cards
+ * and checks. Afterwards, their systems should be able to access
+ * our services to create transactions and receive funds.
+ */
+@Service
+<span class="fc" id="L47">@RequiredArgsConstructor</span>
+<span class="fc" id="L48">@Slf4j(topic = &quot;Transactions&quot;)</span>
+public class TransactionApi {
+    private final AccountService accountService;
+    private final MerchantService merchantService;
+    private final TransactionRepository repository;
+    private final ModelMapper mapper;
+
+    @Transactional(rollbackOn = {
+            AccountNotFoundException.class
+    })
+    public Transaction createTransaction(@Valid CreateTransaction createTransaction) {
+<span class="nc" id="L59">        log.info(&quot;Creating transaction...&quot;);</span>
+<span class="nc" id="L60">        log.debug(&quot;Create transaction DTO: {}&quot;, createTransaction);</span>
+<span class="nc" id="L61">        Transaction transaction = mapper.map(createTransaction, Transaction.class);</span>
+<span class="nc" id="L62">        transaction.setMethod(createTransaction.getMethod());</span>
+
+<span class="nc bnc" id="L64" title="All 2 branches missed.">        if (createTransaction.getCardNumber() == null) {</span>
+<span class="nc" id="L65">            Account account = accountService.getAccountByAccountNumber(createTransaction.getAccountNumber());</span>
+<span class="nc" id="L66">            transaction.setAccount(account);</span>
+<span class="nc" id="L67">            transaction.setInitialBalance(account.getBalance());</span>
+<span class="nc" id="L68">        } else {</span>
+<span class="nc" id="L69">            log.error(&quot;Card service is not live. Make sure that the service is live and healthy.&quot;);</span>
+<span class="nc" id="L70">            throw new BadRequestException(&quot;Card services are currently unavailable. Please try again later.&quot;);</span>
+        }
+
+<span class="nc bnc" id="L73" title="All 2 branches missed.">        if (isMerchantTransaction(createTransaction.getType())) {</span>
+<span class="nc" id="L74">            Merchant merchant = merchantService.checkMerchant(</span>
+<span class="nc" id="L75">                    createTransaction.getMerchantCode(),</span>
+<span class="nc" id="L76">                    createTransaction.getMerchantName());</span>
+<span class="nc" id="L77">            transaction.setMerchant(merchant);</span>
+<span class="nc" id="L78">        } else {</span>
+<span class="nc" id="L79">            transaction.setMerchant(merchantService.getMerchantByCode(&quot;NONE&quot;));</span>
+        }
+
+<span class="nc" id="L82">        transaction.setStatus(TransactionStatus.PENDING); // Transactions will initially be pending when created</span>
+<span class="nc" id="L83">        transaction.setState(TransactionState.CREATED);</span>
+<span class="nc" id="L84">        transaction.setDate(LocalDateTime.now());</span>
+<span class="nc" id="L85">        log.info(&quot;Transaction created and set to PENDING at {}&quot;, transaction.getDate());</span>
+<span class="nc" id="L86">        return repository.save(transaction);</span>
+    }
+
+    /**
+     * Boolean representing whether the transaction type
+     * can be performed by a merchant.
+     * @param type TransactionType enum
+     * @return True if the transaction type can be performed by a merchant
+     */
+    public boolean isMerchantTransaction(TransactionType type) {
+<span class="nc bnc" id="L96" title="All 2 branches missed.">        switch (type) {</span>
+            case PURCHASE:
+            case PAYMENT:
+            case REFUND:
+            case VOID:
+            case DEPOSIT:
+<span class="nc" id="L102">                return true;</span>
+            default:
+<span class="nc" id="L104">                return false;</span>
+        }
+    }
+
+    /**
+     * Processes an initialized transaction
+     * @param transaction   An initialized transaction.
+     *                      In order to initialize a transaction,
+     *                      please see {@link #createTransaction(CreateTransaction)}.
+     * @return A receipt of the processed transaction.
+     */
+    @Transactional(rollbackOn = {
+            UnprocessableException.class
+    })
+    public Receipt processTransaction(Transaction transaction) {
+
+<span class="nc bnc" id="L120" title="All 2 branches missed.">        if (transaction.getState() == TransactionState.POSTED)</span>
+<span class="nc" id="L121">            throw new UnprocessableException(&quot;Transaction is already posted. Unable to process a transaction.&quot;);</span>
+
+<span class="nc" id="L123">        transaction.setState(TransactionState.PROCESSING);</span>
+
+        // Perform the passed transaction
+<span class="nc" id="L126">        performTransaction(transaction);</span>
+<span class="nc" id="L127">        validateTransaction(transaction);</span>
+<span class="nc" id="L128">        postTransaction(transaction);</span>
+
+<span class="nc" id="L130">        return mapToReceipt(transaction);</span>
+    }
+
+    public Receipt mapToReceipt(Transaction transaction) {
+<span class="nc" id="L134">        val receipt = mapper.map(transaction, Receipt.class);</span>
+
+<span class="nc bnc" id="L136" title="All 2 branches missed.">        if (transaction.isMerchantTransaction()) {</span>
+<span class="nc" id="L137">            receipt.setMerchantResponse(mapper.map(</span>
+<span class="nc" id="L138">                    transaction.getMerchant(),</span>
+                    MerchantResponse.class));
+        }
+
+<span class="nc" id="L142">        return receipt;</span>
+    }
+
+    /**
+     * Approve the transaction
+     * @param transaction The transaction to approve
+     */
+    public void approveTransaction(Transaction transaction) {
+<span class="nc" id="L150">        log.info(&quot;Approving transaction {}...&quot;, transaction.getId());</span>
+<span class="nc" id="L151">        transaction.setStatus(TransactionStatus.APPROVED);</span>
+<span class="nc" id="L152">        performTransaction(transaction);</span>
+<span class="nc" id="L153">    }</span>
+
+    /**
+     * Deny the transaction
+     * @param transaction The transaction to deny
+     */
+    public void denyTransaction(Transaction transaction) {
+<span class="nc" id="L160">        log.info(&quot;Denying transaction {}...&quot;, transaction.getId());</span>
+<span class="nc" id="L161">        transaction.setStatus(TransactionStatus.DENIED);</span>
+<span class="nc" id="L162">        performTransaction(transaction);</span>
+<span class="nc" id="L163">    }</span>
+
+    /**
+     * Apply transaction increase or decrease balance to the
+     * account attached to the transaction. The transaction will
+     * only be performed if it has been approved.
+     * &lt;br&gt;
+     * If status is pending and the account is a checking account
+     * then the available balance will be updated.
+     * @param transaction The transaction to perform
+     */
+    public void performTransaction(Transaction transaction) {
+<span class="fc" id="L175">        boolean isIncreasing = transaction.isIncreasing();</span>
+<span class="fc" id="L176">        boolean isDecreasing = transaction.isDecreasing();</span>
+<span class="fc" id="L177">        int amount = transaction.getAmount();</span>
+
+<span class="fc" id="L179">        log.info(&quot;Performing transaction: [amount={}, isIncreasing={}, isDecreasing={}]&quot;,</span>
+<span class="fc" id="L180">                amount,</span>
+<span class="fc" id="L181">                isIncreasing,</span>
+<span class="fc" id="L182">                isDecreasing);</span>
+
+<span class="fc" id="L184">        Account account = transaction.getAccount();</span>
+
+<span class="fc" id="L186">        int postedBalance = account.getBalance();</span>
+<span class="fc" id="L187">        log.info(&quot;Account {} balance before transaction: {}&quot;, account.getId(), postedBalance);</span>
+
+<span class="fc" id="L189">        log.info(&quot;Transaction {} is {}&quot;, transaction.getId(), transaction.getStatus().toString());</span>
+
+        // If transaction is approved, decrease actual balance
+<span class="pc bpc" id="L192" title="1 of 2 branches missed.">        if (transaction.getStatus() == TransactionStatus.APPROVED) {</span>
+<span class="pc bpc" id="L193" title="1 of 4 branches missed.">            if (isIncreasing &amp;&amp; !isDecreasing) {</span>
+<span class="fc" id="L194">                postedBalance = account.getBalance() + amount;</span>
+<span class="pc bpc" id="L195" title="2 of 4 branches missed.">            } else if (isDecreasing &amp;&amp; !isIncreasing) {</span>
+<span class="fc" id="L196">                postedBalance = account.getBalance() - amount;</span>
+            }
+<span class="nc bnc" id="L198" title="All 2 branches missed.">        } else if (transaction.getStatus() == TransactionStatus.PENDING) {</span>
+            // If transaction is pending and account is checking, decrease available balance
+<span class="nc bnc" id="L200" title="All 2 branches missed.">            if (account.getAccountType() == AccountType.CHECKING) {</span>
+<span class="nc" id="L201">                val checkingAccount = (CheckingAccount) account;</span>
+<span class="nc bnc" id="L202" title="All 4 branches missed.">                if (isIncreasing &amp;&amp; !isDecreasing) {</span>
+<span class="nc" id="L203">                    postedBalance = checkingAccount.getAvailableBalance() + amount;</span>
+<span class="nc bnc" id="L204" title="All 4 branches missed.">                } else if (isDecreasing &amp;&amp; !isIncreasing) {</span>
+<span class="nc" id="L205">                    postedBalance = checkingAccount.getAvailableBalance() - amount;</span>
+                }
+<span class="nc" id="L207">            } else {</span>
+<span class="nc bnc" id="L208" title="All 4 branches missed.">                if (isIncreasing &amp;&amp; !isDecreasing) {</span>
+<span class="nc" id="L209">                    postedBalance = account.getBalance() + amount;</span>
+<span class="nc bnc" id="L210" title="All 4 branches missed.">                } else if (isDecreasing &amp;&amp; !isIncreasing) {</span>
+<span class="nc" id="L211">                    postedBalance = account.getBalance() - amount;</span>
+                }
+            }
+<span class="nc" id="L214">            transaction.setPostedBalance(postedBalance);</span>
+<span class="nc" id="L215">            return;</span>
+        }
+<span class="fc" id="L217">        transaction.setPostedBalance(postedBalance);</span>
+<span class="fc" id="L218">        log.info(&quot;Account {} balance after transactions: {}&quot;, account.getId(), postedBalance);</span>
+<span class="fc" id="L219">    }</span>
+
+    /**
+     * Validate transaction based on account balance
+     * @param transaction The transaction to validate
+     */
+    public void validateTransaction(Transaction transaction) {
+<span class="nc" id="L226">        log.info(&quot;Validating transaction...&quot;);</span>
+<span class="nc bnc" id="L227" title="All 2 branches missed.">        if (transaction.getState() != TransactionState.PROCESSING)</span>
+<span class="nc" id="L228">            throw new UnprocessableException(&quot;Transaction is in an invalid state.&quot;);</span>
+<span class="nc bnc" id="L229" title="All 2 branches missed.">        if (transaction.getStatus() != TransactionStatus.PENDING)</span>
+<span class="nc" id="L230">            throw new UnprocessableException(&quot;Transaction already validated.&quot;);</span>
+
+<span class="nc" id="L232">        int balance = transaction.getPostedBalance();</span>
+
+<span class="nc" id="L234">        log.info(&quot;New posted balance: {}&quot;, balance);</span>
+
+<span class="nc bnc" id="L236" title="All 4 branches missed.">        if (balance &lt; 0 &amp;&amp; transaction.isDecreasing()) {</span>
+<span class="nc" id="L237">            denyTransaction(transaction);</span>
+        }
+
+        // If the status is still pending after all checks
+<span class="nc bnc" id="L241" title="All 2 branches missed.">        if (transaction.getStatus() == TransactionStatus.PENDING)</span>
+<span class="nc" id="L242">            approveTransaction(transaction);</span>
+<span class="nc" id="L243">    }</span>
+
+    /**
+     * Set the state of the transaction to POSTED and commit all changes to the database
+     * @param transaction The transaction to post
+     */
+    public void postTransaction(Transaction transaction) {
+<span class="nc" id="L250">        log.info(&quot;Posting transaction {}&quot;, transaction.getId());</span>
+<span class="nc bnc" id="L251" title="All 2 branches missed.">        if (transaction.getState() == TransactionState.POSTED)</span>
+<span class="nc" id="L252">            throw new UnprocessableException(&quot;Transaction is already posted.&quot;);</span>
+<span class="nc bnc" id="L253" title="All 2 branches missed.">        if (transaction.getState() != TransactionState.PROCESSING)</span>
+<span class="nc" id="L254">            throw new UnprocessableException(&quot;Transaction needs to be processed before it is posted.&quot;);</span>
+<span class="nc bnc" id="L255" title="All 2 branches missed.">        if (transaction.getStatus() == TransactionStatus.PENDING)</span>
+<span class="nc" id="L256">            throw new UnprocessableException(&quot;Cannot post a transaction that is pending.&quot;);</span>
+<span class="nc" id="L257">        transaction.setState(TransactionState.POSTED);</span>
+<span class="nc bnc" id="L258" title="All 2 branches missed.">        if (transaction.getStatus() == TransactionStatus.APPROVED) {</span>
+<span class="nc" id="L259">            Account account = transaction.getAccount();</span>
+<span class="nc bnc" id="L260" title="All 4 branches missed.">            if (transaction.isIncreasing() &amp;&amp; !transaction.isDecreasing()) {</span>
+<span class="nc" id="L261">                account.increaseBalance(transaction.getAmount());</span>
+<span class="nc bnc" id="L262" title="All 2 branches missed.">                if (account.getAccountType() == AccountType.CHECKING)</span>
+<span class="nc" id="L263">                    ((CheckingAccount) account).increaseAvailableBalance(transaction.getAmount());</span>
+<span class="nc bnc" id="L264" title="All 4 branches missed.">            } else if (transaction.isDecreasing() &amp;&amp; !transaction.isIncreasing()) {</span>
+<span class="nc" id="L265">                account.decreaseBalance(transaction.getAmount());</span>
+<span class="nc bnc" id="L266" title="All 2 branches missed.">                if (account.getAccountType() == AccountType.CHECKING)</span>
+<span class="nc" id="L267">                    ((CheckingAccount) account).decreaseAvailableBalance(transaction.getAmount());</span>
+            }
+        }
+<span class="nc" id="L270">        log.info(&quot;Transaction {} {}&quot;, transaction.getId(), transaction.getStatus());</span>
+<span class="nc" id="L271">        repository.save(transaction);</span>
+<span class="nc" id="L272">    }</span>
+
+
+    /**
+     * Delete transaction by its ID
+     * @param id The ID of the transaction to delete
+     */
+    @RoleIsManagement
+    public void deleteTransactionById(long id) {
+<span class="nc" id="L281">        Transaction transaction = repository.findById(id).orElseThrow(TransactionNotFoundException::new);</span>
+<span class="nc bnc" id="L282" title="All 2 branches missed.">        if (transaction.getState() != TransactionState.POSTED) {</span>
+<span class="nc" id="L283">            repository.delete(transaction);</span>
+<span class="nc" id="L284">        } else throw new TransactionPostedException();</span>
+<span class="nc" id="L285">    }</span>
+
+    /**
+     * Transfer funds from one account to another using a transfer funds
+     * request.
+     * @param request The transfer funds request
+     * @return An array of 2 receipts
+     */
+    @PreAuthorize(&quot;@authService.canTransfer(#request)&quot;)
+    public Receipt[] transferFunds(TransferFundsRequest request) {
+
+<span class="nc" id="L296">        log.info(&quot;Starting transfer funds...&quot;);</span>
+
+<span class="nc" id="L298">        String maskedFromAccountNo = accountService</span>
+<span class="nc" id="L299">                .maskAccountNumber(request.getFromAccountNumber());</span>
+
+<span class="nc" id="L301">        String maskedToAccountNo = accountService</span>
+<span class="nc" id="L302">                .maskAccountNumber(request.getToAccountNumber());</span>
+
+<span class="nc" id="L304">        String outDescription = String.format(&quot;%s%s&quot;, String.format(&quot;TRANSFER to account %s&quot;, maskedToAccountNo),</span>
+<span class="nc bnc" id="L305" title="All 4 branches missed.">                (Strings.isNotBlank(request.getMemo()) &amp;&amp; request.getMemo() != null) ? &quot; - &quot; + request.getMemo() : &quot;&quot;);</span>
+
+<span class="nc" id="L307">        String inDescription = String.format(&quot;%s%s&quot;, String.format(&quot;TRANSFER from account %s&quot;, maskedFromAccountNo),</span>
+<span class="nc bnc" id="L308" title="All 4 branches missed.">                (Strings.isNotBlank(request.getMemo()) &amp;&amp; request.getMemo() != null) ? &quot; - &quot; + request.getMemo() : &quot;&quot;);</span>
+
+<span class="nc" id="L310">        CreateTransaction transferOut = CreateTransaction.builder()</span>
+<span class="nc" id="L311">                .accountNumber(request.getFromAccountNumber())</span>
+<span class="nc" id="L312">                .type(TransactionType.TRANSFER_OUT)</span>
+<span class="nc" id="L313">                .amount(request.getAmount())</span>
+<span class="nc" id="L314">                .description(outDescription)</span>
+<span class="nc" id="L315">                .method(TransactionMethod.APP)</span>
+<span class="nc" id="L316">                .build();</span>
+
+<span class="nc" id="L318">        CreateTransaction transferIn = CreateTransaction.builder()</span>
+<span class="nc" id="L319">                .accountNumber(request.getToAccountNumber())</span>
+<span class="nc" id="L320">                .type(TransactionType.TRANSFER_IN)</span>
+<span class="nc" id="L321">                .amount(request.getAmount())</span>
+<span class="nc" id="L322">                .description(inDescription)</span>
+<span class="nc" id="L323">                .method(TransactionMethod.APP)</span>
+<span class="nc" id="L324">                .build();</span>
+
+<span class="nc" id="L326">        Transaction outTransaction = createTransaction(transferOut);</span>
+<span class="nc" id="L327">        Transaction inTransaction = createTransaction(transferIn);</span>
+
+<span class="nc" id="L329">        log.info(&quot;Creating transfer transactions: [out: {}, in: {}]&quot;, outTransaction.getId(), inTransaction.getId());</span>
+
+<span class="nc" id="L331">        Receipt outReceipt = processTransaction(outTransaction);</span>
+        Receipt inReceipt;
+
+<span class="nc" id="L334">        Transaction processedOutTransaction = repository.findById(outReceipt.getId())</span>
+<span class="nc" id="L335">                .orElseThrow(TransactionNotFoundException::new);</span>
+
+<span class="nc bnc" id="L337" title="All 2 branches missed.">        if (processedOutTransaction.getStatus() == TransactionStatus.DENIED) {</span>
+<span class="nc" id="L338">            inTransaction.setState(TransactionState.PROCESSING);</span>
+<span class="nc" id="L339">            denyTransaction(inTransaction);</span>
+<span class="nc" id="L340">            postTransaction(inTransaction);</span>
+<span class="nc" id="L341">            inReceipt = mapToReceipt(inTransaction);</span>
+<span class="nc" id="L342">            inReceipt.setStatus(TransactionStatus.DENIED);</span>
+        } else {
+<span class="nc" id="L344">            inReceipt = processTransaction(inTransaction);</span>
+        }
+
+<span class="nc" id="L347">        log.info(&quot;Transfer transactions [out: {}, in: {}, amount: {}] {}&quot;,</span>
+<span class="nc" id="L348">                outTransaction.getId(),</span>
+<span class="nc" id="L349">                inTransaction.getId(),</span>
+<span class="nc" id="L350">                outTransaction.getAmount(),</span>
+<span class="nc" id="L351">                inTransaction.getStatus());</span>
+
+<span class="nc" id="L353">        return new Receipt[]{</span>
+                outReceipt,
+                inReceipt
+        };
+
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TransactionAuthorization.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Transaction Microservice</a> &gt; <a href="index.source.html" class="el_package">com.aline.transactionmicroservice.authorization</a> &gt; <span class="el_source">TransactionAuthorization.java</span></div><h1>TransactionAuthorization.java</h1><pre class="source lang-java linenums">package com.aline.transactionmicroservice.authorization;
+
+import com.aline.core.model.Member;
+import com.aline.core.model.account.Account;
+import com.aline.core.model.user.MemberUser;
+import com.aline.core.model.user.UserRole;
+import com.aline.core.security.service.AbstractAuthorizationService;
+import com.aline.transactionmicroservice.dto.TransferFundsRequest;
+import com.aline.transactionmicroservice.exception.TransactionNotFoundException;
+import com.aline.transactionmicroservice.model.Transaction;
+import com.aline.transactionmicroservice.repository.TransactionRepository;
+import com.aline.transactionmicroservice.service.AccountService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+/**
+ * Authorization predicates that allow
+ * for access of a method.
+ */
+@Component(&quot;authService&quot;)
+<span class="fc" id="L21">@RequiredArgsConstructor</span>
+public class TransactionAuthorization extends AbstractAuthorizationService&lt;Transaction&gt; {
+
+    private final AccountService accountService;
+    private final TransactionRepository repository;
+
+    /**
+     * Can access transaction
+     * @param transaction Transaction to access
+     * @return  True if the account the transaction is
+     *          applied contains a member that is
+     *          represented by the current user.
+     */
+    @Override
+    public boolean canAccess(Transaction transaction) {
+
+<span class="nc bnc" id="L37" title="All 2 branches missed.">        if (getRole() == UserRole.MEMBER) {</span>
+<span class="nc" id="L38">            MemberUser user = (MemberUser) getUser();</span>
+<span class="nc" id="L39">            Member member = user.getMember();</span>
+<span class="nc" id="L40">            return transaction.getAccount().getMembers().contains(member);</span>
+        }
+
+<span class="nc" id="L43">        return roleIsManagement();</span>
+    }
+
+    /**
+     * Can access transaction by ID
+     * @param id The ID of the transaction
+     * @return  True if the transaction represented by the ID
+     *          is applied to an account that the member that
+     *          is represented by the current user owns.
+     */
+    public boolean canAccessById(long id) {
+<span class="nc bnc" id="L54" title="All 2 branches missed.">        if (getRole() == UserRole.MEMBER) {</span>
+<span class="nc" id="L55">            MemberUser user = (MemberUser) getUser();</span>
+<span class="nc" id="L56">            Member member = user.getMember();</span>
+<span class="nc" id="L57">            Account account = accountService.getAccountById(id);</span>
+<span class="nc" id="L58">            Transaction transaction = repository.findById(id).orElseThrow(TransactionNotFoundException::new);</span>
+<span class="nc bnc" id="L59" title="All 4 branches missed.">            return transaction.getAccount().equals(account) &amp;&amp; member.getAccounts().contains(account);</span>
+        }
+<span class="nc" id="L61">        return roleIsManagement();</span>
+    }
+
+    /**
+     * Can access by account ID
+     * @param id The ID of the account
+     * @return  True if the account ID provided
+     *          represents an account that is owned
+     *          by the member that is represented
+     *          by the current user.
+     */
+    public boolean canAccessByAccountId(long id) {
+<span class="nc bnc" id="L73" title="All 2 branches missed.">        if (getRole() == UserRole.MEMBER) {</span>
+<span class="nc" id="L74">            MemberUser user = (MemberUser) getUser();</span>
+<span class="nc" id="L75">            Member member = user.getMember();</span>
+<span class="nc" id="L76">            Account account = accountService.getAccountById(id);</span>
+<span class="nc" id="L77">            return account.getMembers().contains(member);</span>
+        }
+<span class="nc" id="L79">        return roleIsManagement();</span>
+    }
+
+    /**
+     * Can access by account number
+     * @param accountNumber The account number
+     * @return  True if the account number represents an account
+     *          that the current user owns.
+     */
+    public boolean canAccessByAccountNumber(String accountNumber) {
+<span class="nc bnc" id="L89" title="All 2 branches missed.">        if (getRole() == UserRole.MEMBER) {</span>
+<span class="nc" id="L90">            MemberUser user = (MemberUser) getUser();</span>
+<span class="nc" id="L91">            Member member = user.getMember();</span>
+<span class="nc" id="L92">            Account account = accountService.getAccountByAccountNumber(accountNumber);</span>
+<span class="nc" id="L93">            return account.getMembers().contains(member);</span>
+        }
+<span class="nc" id="L95">        return roleIsManagement();</span>
+    }
+
+    /**
+     * Can access by member ID
+     * @param memberId The member ID
+     * @return  True if the transaction is applied to an account
+     *          that belongs to the member with the specified ID.
+     */
+    public boolean canAccessByMemberId(long memberId) {
+<span class="nc bnc" id="L105" title="All 2 branches missed.">        if (getRole() == UserRole.MEMBER) {</span>
+<span class="nc" id="L106">            MemberUser user = (MemberUser) getUser();</span>
+<span class="nc" id="L107">            Member member = user.getMember();</span>
+<span class="nc bnc" id="L108" title="All 2 branches missed.">            return member.getId() == memberId;</span>
+        }
+<span class="nc" id="L110">        return roleIsManagement();</span>
+    }
+
+    /**
+     * Can transfer from an account only if the user owns the account
+     * the transaction is transferring from.
+     * @param request The transferFundsRequest
+     * @return True if the transaction can be applied
+     */
+    public boolean canTransfer(TransferFundsRequest request) {
+
+<span class="nc bnc" id="L121" title="All 2 branches missed.">        if (getRole() == UserRole.MEMBER) {</span>
+<span class="nc" id="L122">            MemberUser user = (MemberUser) getUser();</span>
+<span class="nc" id="L123">            Member member = user.getMember();</span>
+<span class="nc" id="L124">            Account fromAccount = accountService.getAccountByAccountNumber(request.getFromAccountNumber());</span>
+<span class="nc" id="L125">            return fromAccount.getMembers().contains(member);</span>
+        }
+
+<span class="nc" id="L128">        return roleIsManagement();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

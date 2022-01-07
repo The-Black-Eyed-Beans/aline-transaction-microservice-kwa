@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Transaction.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Transaction Microservice</a> &gt; <a href="index.source.html" class="el_package">com.aline.transactionmicroservice.model</a> &gt; <span class="el_source">Transaction.java</span></div><h1>Transaction.java</h1><pre class="source lang-java linenums">package com.aline.transactionmicroservice.model;
+
+import com.aline.core.model.account.Account;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.validator.constraints.Length;
+
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.PostLoad;
+import javax.persistence.PostPersist;
+import javax.persistence.PostUpdate;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
+import javax.persistence.Transient;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PositiveOrZero;
+import java.time.LocalDateTime;
+import java.util.Objects;
+
+/**
+ * Transactions affect the balance of the associated
+ * account.
+ */
+@Entity
+<span class="pc" id="L36">@Builder</span>
+<span class="fc" id="L37">@NoArgsConstructor</span>
+<span class="fc" id="L38">@AllArgsConstructor</span>
+@Getter
+<span class="pc" id="L40">@Setter</span>
+public class Transaction {
+
+    /**
+     * Transaction ID
+     */
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+<span class="fc" id="L48">    private Long id;</span>
+
+    /**
+     * The transaction method.
+     * &lt;br&gt;
+     * &lt;em&gt;How the transaction was processed&lt;/em&gt;
+     */
+    @NotNull(message = &quot;Transaction method is required.&quot;)
+    @Enumerated(EnumType.STRING)
+<span class="nc" id="L57">    private TransactionMethod method;</span>
+
+    /**
+     * Transaction amount
+     * &lt;br&gt;
+     * &lt;em&gt;Represented in cents. (Integer instead of float)&lt;/em&gt;
+     */
+    @NotNull(message = &quot;Transaction amount is required.&quot;)
+    @PositiveOrZero
+<span class="fc" id="L66">    private Integer amount;</span>
+
+    /**
+     * The account the transaction is being
+     * applied to. (This is very important to include
+     * in the DTO)
+     */
+    @NotNull(message = &quot;An account is required.&quot;)
+    @ManyToOne(optional = false)
+<span class="fc" id="L75">    private Account account;</span>
+
+    /**
+     * The balance of the account at the time
+     * of the transaction &lt;em&gt;(before anything is applied
+     * to the account)&lt;/em&gt;
+     */
+    @NotNull(message = &quot;The account initial balance is required.&quot;)
+<span class="nc" id="L83">    private Integer initialBalance;</span>
+
+    /**
+     * The balance actually posted to the account after
+     * the transaction is applied
+     */
+<span class="nc" id="L89">    private Integer postedBalance;</span>
+
+    /**
+     * Transaction type specifies whether it
+     * was a purchase, payment, refund, etc...
+     */
+    @NotNull(message = &quot;Transaction type is required.&quot;)
+    @Enumerated(EnumType.STRING)
+<span class="nc" id="L97">    private TransactionType type;</span>
+
+    /**
+     * Transaction status (ACTIVE, PENDING, DENIED)
+     */
+    @NotNull(message = &quot;Transaction status is required.&quot;)
+    @Enumerated(EnumType.STRING)
+<span class="fc" id="L104">    private TransactionStatus status;</span>
+
+    /**
+     * The state the transaction is currently in
+     */
+    @NotNull(message = &quot;Transaction state is required.&quot;)
+    @Enumerated(EnumType.STRING)
+<span class="nc" id="L111">    private TransactionState state;</span>
+
+    /**
+     * Description of the transaction
+     */
+    @Length(max = 255)
+<span class="nc" id="L117">    private String description;</span>
+
+    /**
+     * Non-option merchant
+     */
+    @ManyToOne
+<span class="nc" id="L123">    private Merchant merchant;</span>
+
+    @NotNull
+<span class="nc" id="L126">    private LocalDateTime date;</span>
+
+    /**
+     * The date the transaction was made
+     */
+    @CreationTimestamp
+<span class="nc" id="L132">    private LocalDateTime created;</span>
+
+    /**
+     * The last time the transaction was modified
+     */
+    @UpdateTimestamp
+<span class="nc" id="L138">    private LocalDateTime lastModified;</span>
+
+    /**
+     * True if the transaction increases the account balance
+     */
+    @Transient
+<span class="fc" id="L144">    private boolean increasing;</span>
+
+    /**
+     * True if the transaction decreases the account balance
+     */
+    @Transient
+<span class="fc" id="L150">    private boolean decreasing;</span>
+
+    /**
+     * True if the transaction type is a merchant transaction type
+     */
+    @Transient
+<span class="nc" id="L156">    private boolean merchantTransaction;</span>
+
+    @PostLoad
+    @PrePersist
+    @PostPersist
+    @PreUpdate
+    @PostUpdate
+    public void checkTransaction() {
+
+        // Check if transaction was requested by a merchant
+<span class="fc" id="L166">        checkTransactionType();</span>
+
+        // Set the boolean values: increasing and decreasing
+<span class="fc" id="L169">        checkIncreaseDecrease();</span>
+
+<span class="fc" id="L171">    }</span>
+
+    private void checkTransactionType() {
+<span class="fc bfc" id="L174" title="All 2 branches covered.">        switch (type) {</span>
+            case PURCHASE:
+            case PAYMENT:
+            case REFUND:
+            case VOID:
+            case DEPOSIT:
+<span class="fc" id="L180">                merchantTransaction = true;</span>
+<span class="fc" id="L181">                break;</span>
+            default:
+<span class="fc" id="L183">                merchantTransaction = false;</span>
+                break;
+        }
+<span class="fc" id="L186">    }</span>
+
+    private void checkIncreaseDecrease() {
+        // If amount is &lt;= 0, then it will neither be increase nor decrease
+<span class="fc bfc" id="L190" title="All 2 branches covered.">        if (amount &lt;= 0) {</span>
+<span class="fc" id="L191">            increasing = false;</span>
+<span class="fc" id="L192">            decreasing = false;</span>
+<span class="fc" id="L193">            return;</span>
+        }
+
+        // Set increase decrease based on transaction type
+<span class="pc bpc" id="L197" title="1 of 4 branches missed.">        switch (type) {</span>
+            case WITHDRAWAL:
+            case PURCHASE:
+            case PAYMENT:
+            case TRANSFER_OUT:
+<span class="fc" id="L202">                increasing = false;</span>
+<span class="fc" id="L203">                decreasing = true;</span>
+<span class="fc" id="L204">                break;</span>
+            case DEPOSIT:
+            case REFUND:
+            case TRANSFER_IN:
+<span class="fc" id="L208">                increasing = true;</span>
+<span class="fc" id="L209">                decreasing = false;</span>
+<span class="fc" id="L210">                break;</span>
+            // Regardless of the amount, if the transaction is void,
+            // then it will not increase or decrease
+            case VOID:
+<span class="fc" id="L214">                increasing = false;</span>
+<span class="fc" id="L215">                decreasing = false;</span>
+                break;
+        }
+<span class="fc" id="L218">    }</span>
+
+    @Override
+    public boolean equals(Object o) {
+<span class="pc bpc" id="L222" title="1 of 2 branches missed.">        if (this == o) return true;</span>
+<span class="nc bnc" id="L223" title="All 4 branches missed.">        if (o == null || getClass() != o.getClass()) return false;</span>
+<span class="nc" id="L224">        Transaction that = (Transaction) o;</span>
+<span class="nc bnc" id="L225" title="All 6 branches missed.">        return id.equals(that.id) &amp;&amp; amount.equals(that.amount) &amp;&amp; date.equals(that.date);</span>
+    }
+
+    @Override
+    public int hashCode() {
+<span class="nc" id="L230">        return Objects.hash(id, amount, date);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

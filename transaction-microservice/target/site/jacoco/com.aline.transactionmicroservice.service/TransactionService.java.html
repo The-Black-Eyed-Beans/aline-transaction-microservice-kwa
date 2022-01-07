@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TransactionService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Transaction Microservice</a> &gt; <a href="index.source.html" class="el_package">com.aline.transactionmicroservice.service</a> &gt; <span class="el_source">TransactionService.java</span></div><h1>TransactionService.java</h1><pre class="source lang-java linenums">package com.aline.transactionmicroservice.service;
+
+import com.aline.core.model.Member;
+import com.aline.core.model.account.Account;
+import com.aline.transactionmicroservice.dto.TransactionResponse;
+import com.aline.transactionmicroservice.exception.TransactionNotFoundException;
+import com.aline.transactionmicroservice.model.Transaction;
+import com.aline.transactionmicroservice.repository.TransactionRepository;
+import com.aline.transactionmicroservice.util.TransactionCriteria;
+import com.aline.transactionmicroservice.util.TransactionCriteriaMode;
+import com.aline.transactionmicroservice.util.TransactionSpecification;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
+import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.lang.Nullable;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Service;
+
+/**
+ * Transaction service provides secured methods
+ * that access a member's transactions.
+ */
+@Service
+<span class="fc" id="L29">@RequiredArgsConstructor</span>
+<span class="fc" id="L30">@Slf4j</span>
+public class TransactionService {
+    private final TransactionRepository repository;
+    private final AccountService accountService;
+    private final MemberService memberService;
+    private final ModelMapper modelMapper;
+
+    /**
+     * Save a transaction into the database
+     * &lt;br&gt;
+     * &lt;strong&gt;
+     *     * This does not affect any accounts associated with it.
+     *      The transaction will not be processed.
+     * &lt;/strong&gt;
+     * @param transaction The transaction to save
+     * @return The saved transaction
+     */
+    public Transaction save(Transaction transaction) {
+<span class="fc" id="L48">        return repository.save(transaction);</span>
+    }
+
+    /**
+     * Retrieve a transaction by its ID
+     * @param id The ID of the transaction
+     * @return The retrieved transaction
+     * @throws TransactionNotFoundException if the transaction does not exist
+     */
+    @PostAuthorize(&quot;@authService.canAccessById(#id)&quot;)
+    public Transaction getTransactionById(long id) {
+<span class="nc" id="L59">        return repository.findById(id).orElseThrow(TransactionNotFoundException::new);</span>
+    }
+
+    /**
+     * Get all transactions by the account number
+     * @param accountNumber Account number string
+     * @param pageable The pageable object passed in by the controller
+     * @return A page of transactions
+     * @see AccountService#getAccountByAccountNumber(String)
+     */
+    @PreAuthorize(&quot;@authService.canAccessByAccountNumber(#accountNumber)&quot;)
+<span class="nc bnc" id="L70" title="All 2 branches missed.">    public Page&lt;Transaction&gt; getAllTransactionsByAccountNumber(@NonNull String accountNumber,</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">                                                               @NonNull Pageable pageable,</span>
+                                                               @Nullable String[] searchTerms) {
+<span class="nc" id="L73">        Account account = accountService.getAccountByAccountNumber(accountNumber);</span>
+<span class="nc" id="L74">        return getAllTransactionsByAccount(account, pageable, searchTerms);</span>
+    }
+
+    /**
+     * Get all transaction pages by account ID
+     * @param id The ID of the account being queried for transactions
+     * @param pageable Pageable object passed in by the controller
+     * @return A page of transactions based on the account ID
+     */
+    @PreAuthorize(&quot;@authService.canAccessByAccountId(#id)&quot;)
+    public Page&lt;Transaction&gt; getAllTransactionsByAccountId(long id,
+<span class="nc bnc" id="L85" title="All 2 branches missed.">                                                           @NonNull Pageable pageable,</span>
+                                                           @Nullable String[] searchTerms) {
+<span class="nc" id="L87">        Account account = accountService.getAccountById(id);</span>
+<span class="nc" id="L88">        return getAllTransactionsByAccount(account, pageable, searchTerms);</span>
+    }
+
+    /**
+     * Get all transactions by member ID
+     * @param memberId The ID of the member
+     * @param pageable Pageable object padded in by the controller
+     * @return A page of transactions based on the supplied member ID
+     */
+    @PreAuthorize(&quot;@authService.canAccessByMemberId(#memberId)&quot;)
+    public Page&lt;Transaction&gt; getAllTransactionsByMemberId(long memberId,
+<span class="nc bnc" id="L99" title="All 2 branches missed.">                                                          @NonNull Pageable pageable,</span>
+                                                          @Nullable String[] searchTerms) {
+<span class="nc" id="L101">        Member member = memberService.getMemberById(memberId);</span>
+<span class="nc" id="L102">        return getAllTransactionsByMember(member, pageable, searchTerms);</span>
+    }
+
+    /**
+     * Get all transactions associated with an account entity
+     * @param account The account entity
+     * @param pageable The pageable object passed in by the calling controller
+     * @return A page of transactions
+     */
+<span class="nc bnc" id="L111" title="All 2 branches missed.">    public Page&lt;Transaction&gt; getAllTransactionsByAccount(@NonNull Account account,</span>
+<span class="nc bnc" id="L112" title="All 2 branches missed.">                                                         @NonNull Pageable pageable,</span>
+                                                         @Nullable String[] searchTerms) {
+<span class="nc" id="L114">        val criteria = TransactionCriteria.builder()</span>
+<span class="nc" id="L115">                .searchTerms(searchTerms)</span>
+<span class="nc" id="L116">                .mode(TransactionCriteriaMode.ACCOUNT)</span>
+<span class="nc" id="L117">                .accountId(account.getId())</span>
+<span class="nc" id="L118">                .build();</span>
+<span class="nc" id="L119">        val spec = new TransactionSpecification(criteria);</span>
+<span class="nc" id="L120">        return repository.findAll(spec, pageable);</span>
+    }
+
+<span class="nc bnc" id="L123" title="All 2 branches missed.">    public Page&lt;Transaction&gt; getAllTransactionsByMember(@NonNull Member member,</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">                                                        @NonNull Pageable pageable,</span>
+                                                        @Nullable String[] searchTerms) {
+<span class="nc" id="L126">        val criteria = TransactionCriteria.builder()</span>
+<span class="nc" id="L127">                .searchTerms(searchTerms)</span>
+<span class="nc" id="L128">                .mode(TransactionCriteriaMode.MEMBER)</span>
+<span class="nc" id="L129">                .memberId(member.getId())</span>
+<span class="nc" id="L130">                .build();</span>
+<span class="nc" id="L131">        val spec = new TransactionSpecification(criteria);</span>
+<span class="nc" id="L132">        return repository.findAll(spec, pageable);</span>
+    }
+
+    /**
+     * Map a transaction entity to it's DTO type TransactionResponse,
+     * @param transaction The transaction to map
+     * @return The transaction response DTO
+     * @apiNote A TransactionResponse should always be the preferred
+     *          response DTO for a transaction information request.
+     */
+    public TransactionResponse mapToResponse(Transaction transaction) {
+<span class="nc" id="L143">        String accountNumber = transaction.getAccount().getAccountNumber();</span>
+<span class="nc" id="L144">        TransactionResponse response = modelMapper.map(transaction, TransactionResponse.class);</span>
+<span class="nc" id="L145">        response.setAccountNumber(accountService.maskAccountNumber(accountNumber));</span>
+<span class="nc" id="L146">        return response;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
