@@ -13,11 +13,11 @@ pipeline {
     parameters {
         string(name: "BRANCH_NAME", description: "The branch to checkout.")
     }
-
+    //
     stages {
         stage("Checkout") {
             steps {
-                git(branch:"${params.BRANCH_NAME}", url:"https://github.com/The-Black-Eyed-Beans/aline-transaction-microservice-kwa.git")
+                // git(branch:"${params.BRANCH_NAME}", url:"https://github.com/The-Black-Eyed-Beans/aline-transaction-microservice-kwa.git")
                 sh "git submodule init && git submodule update"
             }
         }
